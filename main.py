@@ -10,9 +10,9 @@ def createEmptyBoard():
 	for row in range(0,size):
 		board.append([])
 		for col in range(0,size):
-			# * = empty, O = white, X = black
+			# ' ' = empty, O = white, X = black
 			# O is letter O not 0
-			board[row].append("*")
+			board[row].append(" ")
 	return board
 
 # Sets up initial game board
@@ -30,19 +30,20 @@ def setupBoard():
 # Prints the game board
 def printBoard(board):
 	print("Current Board:")
-	print np.matrix(board)
+	print(np.matrix(board))
 
 # Handles user color selection
 def selectColor():
-	userColorInput = input("What color would you like to play as? Please enter 'black' or 'white'.")
-	if userColorInput = "black":
+	userColorInput = raw_input("What color would you like to play as? Please enter \'black\' or \'white\'. ")
+	
+	if userColorInput == "black" or userColorInput == "b":
 		userColor = "black"
 		cpuColor = "white"
 	else:
 		userColor = "white"
 		cpuColor = "black"
 
-	print("Great! You are playing as %s. The CPU is playing as %s.", userColor, cpuColor)
+	print("Great! You are playing as %s. The CPU is playing as %s." % (userColor, cpuColor))
 
 	return cpuColor
 
@@ -54,6 +55,5 @@ def main():
 	cpuColor = selectColor()
 
 	printBoard(board)
-
 
 main()
