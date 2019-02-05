@@ -3,6 +3,15 @@
 
 import numpy as np
 import string
+import re
+
+# Introduces the game and some basic info
+def gameWelcome():
+	print("Welcome to Reversi!")
+	print("To learn how to play, please visit https://www.mathsisfun.com/games/reversi.html.")
+	print("When it's your move, enter a row letter and column number adjacently, ex. \'c5\'.")
+	print("You can also enter \'quit\' to quit, or \'help\' if you need a move suggestion.")
+	print("Enjoy, and good luck!")
 
 # Creates empty game board
 def createEmptyBoard():
@@ -42,24 +51,65 @@ def printBoard(board):
 def selectColor():
 	userColorInput = raw_input("What color would you like to play as? Please enter \'black\' or \'white\'. ")
 	
-	if userColorInput == "black" or userColorInput == "b":
-		userColor = "black"
-		cpuColor = "white"
-	else:
+	if userColorInput == "white" or userColorInput == "w":
 		userColor = "white"
 		cpuColor = "black"
+	else:
+		userColor = "black"
+		cpuColor = "white"
 
 	print("Great! You are playing as %s. The CPU is playing as %s." % (userColor, cpuColor))
 
-	return cpuColor
+	return userColor, cpuColor
+
+# Returns whether or not a given move for a player is valid
+def isValidMove(board, moveColor, row, col):
+	return True
+
+# Returns a list of all valid moves given the board and turn/move color
+def getAllValidMoves(board, moveColor):
+	allValidMoves = []
+
+	for row in range(0,8):
+		for col in range(0,8):
+			if (isValidMove(board, moveColor, row, col)):
+				allValidMoves.append((row, col))
+
+	return allValidMoves
 
 def main():
 	board = setupBoard()
+	gameWelcome()
 
-	print("Welcome to Reversi! Let's get started.")
+	userColor, cpuColor = selectColor()
+	moveColor = "black"
 
-	cpuColor = selectColor()
+	rowLetterToNum = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7 }
+	rowNumToLetter = {0: "a", 1: "b", 2: "c", 3: "d", 4: "e", 5: "f", 6: "g", 7: "h"}
 
-	printBoard(board)
+	while True:
+		printBoard(board)
+		validMoves = getAllValidMoves(board, moveColor)
+
+		if len(validMoves) == 0:
+			print ("There are no valid moves for " + moveColor + ". Passing turn.")
+
+		if (userColor == moveColor):
+			userCanMove = True
+			while userCanMove:
+				userMove = raw_input("Your move! ")
+				if (userMove == "quit"):
+					sys.exit()
+				if (userMove == "help"):
+					print("TODO")
+					#f
+				if len(re.findall(r'[a-h][1-8]', userMove)) != 1:
+					print("Looks like you didn't format your move correctly. Example: c6")
+					continue
+
+
+				break
+
+		break
 
 main()
