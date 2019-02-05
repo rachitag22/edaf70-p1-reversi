@@ -2,6 +2,7 @@
 # Rachit Agarwal | Jay Mangrulkar
 
 import numpy as np
+import string
 
 # Creates empty game board
 def createEmptyBoard():
@@ -26,11 +27,16 @@ def setupBoard():
 
 	return board
 
-
 # Prints the game board
 def printBoard(board):
-	print("Current Board:")
-	print(np.matrix(board))
+	print("Current Board:\n")
+	print("  | a | b | c | d | e | f | g | h |")
+	print("  " + "".join(["-" for i in range(33)]))
+	for row in range(0,8):
+		rowVals = " | ".join(board[row])
+		print (str(row + 1) + " | " + rowVals + " |")
+		print("  " + "".join(["-" for i in range(33)]))
+	# print(np.matrix(board))
 
 # Handles user color selection
 def selectColor():
