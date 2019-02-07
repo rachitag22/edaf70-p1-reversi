@@ -5,6 +5,11 @@ import numpy as np
 import string
 import re
 
+
+colLetterToNum = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7 }
+colNumToLetter = {0: "a", 1: "b", 2: "c", 3: "d", 4: "e", 5: "f", 6: "g", 7: "h"}
+colorToLetter = {"white": "O", "black": "X"}
+
 # Introduces the game and some basic info
 def gameWelcome():
 	print("Welcome to Reversi!")
@@ -63,9 +68,6 @@ def selectColor():
 
 	return userColor, cpuColor
 
-# Returns number of tiles flipped by a certain move
-
-
 # Converts a board letter/piece (O or X) to either -1 or 1
 def convertColor(val):
 	if (val == "X" or val == "black"):
@@ -74,6 +76,65 @@ def convertColor(val):
 		return -1
 	else:
 		return 0
+
+def convertTileTupleToString(tile):
+	print("TILE: " + str(tile[1]) + " " + str(tile[0]))
+	return colNumToLetter[tile[1]] + str(tile[0]+1)
+
+# Flips tiles and returns resultant board upon making a move (which should already be validated)
+def flipTilesAndReturnNewBoard(board, moveColor, row, col):
+
+	tilesToFlip = []
+
+	moveConst = convertColor(moveColor)
+	otherConst = moveConst * -1
+
+	for deltaRow in range(-1,2):
+		for deltaCol in range(-1,2):
+			# print("Testing next tile, dX and dY: " + str(deltaRow) + ", " + str(deltaCol))
+			foundOtherColor = False
+			nextTile = otherConst
+			continueSearch = True
+
+			nextTileRow = row + deltaRow
+			nextTileCol = col + deltaCol
+
+			tempTilesToFlip = []
+
+			while nextTile == otherConst and continueSearch == True:
+
+				try:
+					nextTile = convertColor(board[nextTileRow][nextTileCol])
+
+					if nextTile == 0:
+						continueSearch = False
+					elif nextTile == otherConst:
+						# print("Next tile: " + str(nextTileRow) + "-" + str(nextTileCol) + ": " + str(nextTile))
+						tempTilesToFlip.append((nextTileRow, nextTileCol))
+						foundOtherColor = True
+						continueSearch = True
+
+					# We've traversed and found the move's color, AND have seen other chips along the way ("end of the line")
+					elif foundOtherColor == True:
+						tilesToFlip.extend(tempTilesToFlip)
+						continue
+
+					nextTileRow += deltaRow
+					nextTileCol += deltaCol
+
+				except:
+					continueSearch = False
+
+	for (flipRow, flipCol) in tilesToFlip:
+		board[flipRow][flipCol] = "X" if board[flipRow][flipCol] == "O" else "O"
+
+	tilesFlippedWithLetters = []
+	for tile in tilesToFlip:
+		tilesFlippedWithLetters.append(convertTileTupleToString(tile))
+
+	print("Tiles Flipped: " + str(tilesFlippedWithLetters))
+	return board
+
 
 # Returns whether or not a given move for a player is valid
 def isValidMove(board, moveColor, row, col):
@@ -85,11 +146,8 @@ def isValidMove(board, moveColor, row, col):
 	if board[row][col] != " ":
 		return False
 
-	# print ("Testing move on " + str(row) + "-" + str(col) + " for " + moveColor)
-
 	for deltaRow in range(-1,2):
 		for deltaCol in range(-1,2):
-			# print("Testing next tile, dX and dY: " + str(deltaRow) + ", " + str(deltaCol))
 			foundOtherColor = False
 			nextTile = otherConst
 			continueSearch = True
@@ -105,12 +163,9 @@ def isValidMove(board, moveColor, row, col):
 					if nextTile == 0:
 						continueSearch = False
 					elif nextTile == otherConst:
-						# print("Next tile: " + str(nextTileRow) + "-" + str(nextTileCol) + ": " + str(nextTile))
 						foundOtherColor = True
 						continueSearch = True
 					elif foundOtherColor == True:
-						# print("Returning true.")
-						# print("Next tile: " + str(nextTileRow) + "-" + str(nextTileCol) + ": " + str(nextTile))
 						return True
 
 					nextTileRow += deltaRow
@@ -129,7 +184,6 @@ def getAllValidMoves(board, moveColor):
 		for col in range(0,8):
 			if (isValidMove(board, moveColor, row, col)):
 				allValidMoves.append((row, col))
-
 	return allValidMoves
 
 def main():
@@ -139,49 +193,67 @@ def main():
 	userColor, cpuColor = selectColor()
 	moveColor = "black"
 
-	rowLetterToNum = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7 }
-	rowNumToLetter = {0: "a", 1: "b", 2: "c", 3: "d", 4: "e", 5: "f", 6: "g", 7: "h"}
-	colorToLetter = {"white": "O", "black": "X"}
+	print("TESTING a1: " + str(isValidMove(board, moveColor, 0, 0)))
 
 	while True:
 		printBoard(board)
 		validMoves = getAllValidMoves(board, moveColor)
-		print("Valid Moves: " + str(validMoves))
 
 		if len(validMoves) == 0:
 			print ("There are no valid moves for " + moveColor + ". Passing turn.")
+			userNeedsToMove = False
+			moveColor = "white" if (userColor == "black") else "black"
+		else:
+			userNeedsToMove = True
 
-		validMovesForUser = []
+		validMovesWithLetters = []
 		for move in validMoves:
-			validMovesForUser.append(rowNumToLetter[move[0]] + str(move[1]+1))
+			validMovesWithLetters.append(convertTileTupleToString(move))
 
+		print("Valid moves for " + moveColor + ": " + str(validMovesWithLetters))
+
+		# User's turn/move
 		if (userColor == moveColor):
-			userCanMove = True
-			while userCanMove:
+			while userColor == moveColor:
 				userMove = raw_input("Your move! Remember, your color is " + str(userColor) + " (" + str(colorToLetter[userColor]) + ") ")
 				if (userMove == "quit"):
 					sys.exit()
 				if (userMove == "help"):
 					
-					print("Here's a list of valid moves: " + str(validMovesForUser))
+					print("Here's a list of valid moves: " + str(validMovesWithLetters))
 					print("Go ahead, you got this.")
 					continue
 				if len(re.findall(r'[a-h][1-8]', userMove)) != 1:
 					print("Looks like you didn't format your move correctly. Example: c6")
 					continue
-				rowLetter = re.search(r'([a-h])([1-8])', userMove).group(1)
-				rowIndex = rowLetterToNum[rowLetter]
-				colIndex = int(re.search(r'([a-h])([1-8])', userMove).group(2)) - 1
+				colLetter = re.search(r'([a-h])([1-8])', userMove).group(1)
+				colIndex = colLetterToNum[colLetter]
+				rowIndex = int(re.search(r'([a-h])([1-8])', userMove).group(2)) - 1
 
-				print(isValidMove(board, userColor, rowIndex, colIndex))
+				# print(isValidMove(board, userColor, rowIndex, colIndex))
 
 				if (rowIndex, colIndex) not in validMoves:
 					print("That's not a valid move. Please try again.")
 					print()
 					continue
 
-				break
+				print("Nice move! " + moveColor + " placing tile on " + userMove)
+				board[rowIndex][colIndex] = "X" if userColor == "black" else "O"
+				
+				board = flipTilesAndReturnNewBoard(board, moveColor, rowIndex, colIndex)
 
-		break
+				moveColor = cpuColor
+
+		# Computer's turn/move
+		else:
+			# Implement algorithm here
+			cpuMove = validMoves[0]
+			(rowIndex, colIndex) = cpuMove
+
+			print("CPU move! " + moveColor + " placing tile on " + convertTileTupleToString(cpuMove))
+			board[rowIndex][colIndex] = "X" if cpuColor == "black" else "O"
+			board = flipTilesAndReturnNewBoard(board, moveColor, rowIndex, colIndex)
+
+			moveColor = userColor
 
 main()
