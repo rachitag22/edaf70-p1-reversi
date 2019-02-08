@@ -78,12 +78,10 @@ def convertColor(val):
 		return 0
 
 def convertTileTupleToString(tile):
-	print("TILE: " + str(tile[1]) + " " + str(tile[0]))
+	# print("TILE: " + str(tile[1]) + " " + str(tile[0]))
 	return colNumToLetter[tile[1]] + str(tile[0]+1)
 
-# Flips tiles and returns resultant board upon making a move (which should already be validated)
-def flipTilesAndReturnNewBoard(board, moveColor, row, col):
-
+def getFlippedTilesList(board, moveColor, row, col):
 	tilesToFlip = []
 
 	moveConst = convertColor(moveColor)
@@ -104,7 +102,12 @@ def flipTilesAndReturnNewBoard(board, moveColor, row, col):
 			while nextTile == otherConst and continueSearch == True:
 
 				try:
+					if (nextTileRow < 0 or nextTileRow > 7 or nextTileCol < 0 or nextTileCol > 7):
+						continueSearch = False
+						break
+
 					nextTile = convertColor(board[nextTileRow][nextTileCol])
+					# print ("Next Tile @ " + str(nextTileRow) + ", " + str(nextTileCol))
 
 					if nextTile == 0:
 						continueSearch = False
@@ -116,6 +119,7 @@ def flipTilesAndReturnNewBoard(board, moveColor, row, col):
 
 					# We've traversed and found the move's color, AND have seen other chips along the way ("end of the line")
 					elif foundOtherColor == True:
+						print("found other color")
 						tilesToFlip.extend(tempTilesToFlip)
 						continue
 
@@ -125,6 +129,11 @@ def flipTilesAndReturnNewBoard(board, moveColor, row, col):
 				except:
 					continueSearch = False
 
+	return tilesToFlip
+	
+
+# Flips tiles and returns resultant board upon making a move (which should already be validated)
+def flipTilesAndReturnNewBoard(board, moveColor, row, col):
 	for (flipRow, flipCol) in tilesToFlip:
 		board[flipRow][flipCol] = "X" if board[flipRow][flipCol] == "O" else "O"
 
@@ -138,6 +147,9 @@ def flipTilesAndReturnNewBoard(board, moveColor, row, col):
 
 # Returns whether or not a given move for a player is valid
 def isValidMove(board, moveColor, row, col):
+	if (flipTilesAndReturnNewBoard)
+
+def isValidMoveOld(board, moveColor, row, col):
 	valid = False
 
 	moveConst = convertColor(moveColor)
@@ -192,8 +204,6 @@ def main():
 
 	userColor, cpuColor = selectColor()
 	moveColor = "black"
-
-	print("TESTING a1: " + str(isValidMove(board, moveColor, 0, 0)))
 
 	while True:
 		printBoard(board)
