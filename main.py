@@ -87,6 +87,7 @@ def getFlippedTilesList(board, moveColor, row, col):
     moveConst = convertColor(moveColor)
     otherConst = moveConst * -1
 
+    # print("Testing for " + moveColor + " @ " + str(row) + ", " + str(col))
     for deltaRow in range(-1,2):
         for deltaCol in range(-1,2):
             # print("Testing next tile, dX and dY: " + str(deltaRow) + ", " + str(deltaCol))
@@ -98,6 +99,9 @@ def getFlippedTilesList(board, moveColor, row, col):
             nextTileCol = col + deltaCol
 
             tempTilesToFlip = []
+
+            if (deltaRow == 0 and deltaCol == 0):
+                continue
 
             while nextTile == otherConst and continueSearch == True:
 
@@ -124,6 +128,8 @@ def getFlippedTilesList(board, moveColor, row, col):
 
                     nextTileRow += deltaRow
                     nextTileCol += deltaCol
+
+                    # print("Next: " + str(nextTileRow) + " " + str(nextTileCol))
 
                 except:
                     continueSearch = False
@@ -152,44 +158,6 @@ def isValidMove(board, moveColor, row, col):
     if (len(getFlippedTilesList(board, moveColor, row, col)) == 0):
         return False
     return True
-
-def isValidMoveOld(board, moveColor, row, col):
-    valid = False
-
-    moveConst = convertColor(moveColor)
-    otherConst = moveConst * -1
-
-    if board[row][col] != " ":
-        return False
-
-    for deltaRow in range(-1,2):
-        for deltaCol in range(-1,2):
-            foundOtherColor = False
-            nextTile = otherConst
-            continueSearch = True
-
-            nextTileRow = row + deltaRow
-            nextTileCol = col + deltaCol
-
-            while nextTile == otherConst and continueSearch == True:
-
-                try:
-                    nextTile = convertColor(board[nextTileRow][nextTileCol])
-                    if nextTile == 0:
-                        continueSearch = False
-                    elif nextTile == otherConst:
-                        foundOtherColor = True
-                        continueSearch = True
-                    elif foundOtherColor == True:
-                        return True
-
-                    nextTileRow += deltaRow
-                    nextTileCol += deltaCol
-
-                except:
-                    continueSearch = False
-
-    return False
 
 # Returns a list of all valid moves given the board and turn/move color
 def getAllValidMoves(board, moveColor):
