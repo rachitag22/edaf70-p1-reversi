@@ -5,6 +5,14 @@ import numpy as np
 import string
 import re
 
+# https://stackoverflow.com/questions/2482602/a-general-tree-implementation
+class Node(object):
+    def __init__(self, data):
+        self.data = data
+        self.children = []
+
+    def add_child(self, obj):
+        self.children.append(obj)
 
 colLetterToNum = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7 }
 colNumToLetter = {0: "a", 1: "b", 2: "c", 3: "d", 4: "e", 5: "f", 6: "g", 7: "h"}
@@ -52,6 +60,16 @@ def printBoard(board):
         print (str(row + 1) + " | " + rowVals + " |")
         print("  " + "".join(["-" for i in range(33)]))
     # print(np.matrix(board))
+
+def getNumTiles(board):
+    numBlack = 0
+    numWhite = 0
+    
+    for row in board:
+        numBlack += row.count("X")
+        numWhite += row.count("O")
+    
+    return (numBlack, numWhite)
 
 # Handles user color selection
 def selectColor():
@@ -136,6 +154,8 @@ def getFlippedTilesList(board, moveColor, row, col):
 
     return tilesToFlip
     
+def getNumFlippedTiles(board, moveColor, row, col):
+    return len(getFlippedTilesList(board, moveColor, row, col))
 
 # Flips tiles and returns resultant board upon making a move (which should already be validated)
 def flipTilesAndReturnNewBoard(board, moveColor, row, col):
@@ -178,6 +198,7 @@ def main():
 
     while True:
         printBoard(board)
+        
         validMoves = getAllValidMoves(board, moveColor)
 
         if len(validMoves) == 0:
@@ -224,7 +245,7 @@ def main():
                 board = flipTilesAndReturnNewBoard(board, moveColor, rowIndex, colIndex)
 
                 moveColor = cpuColor
-
+                
         # Computer's turn/move
         else:
             # Implement algorithm here
@@ -236,5 +257,6 @@ def main():
             board = flipTilesAndReturnNewBoard(board, moveColor, rowIndex, colIndex)
 
             moveColor = userColor
+
 
 main()
