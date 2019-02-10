@@ -290,6 +290,30 @@ def makeCpuMove(board, moveColor, validMoves):
     print("Minimax Result: " + str(minimax_result))
     return (minimax_result[1], minimax_result[2])
 
+def gameOver(board, userColor):
+    print("Game over!")
+    print("Final Scores:")
+    printScore(board)
+
+    (blackScore, whiteScore) = getScores(board)
+
+    if (blackScore > whiteScore):
+        winningColor = "black"
+        winningScore = blackScore
+    elif (whiteScore > blackScore):
+        winningColor = "white"
+        winningScore = whiteScore
+    else:
+        print("It's a tie!")
+        sys.exit()
+
+    if userColor == winningColor:
+        print("YOU WIN!")
+    else:
+        print("Sorry, you lost! :(")
+
+    sys.exit()
+
 def main():
     board = setupBoard()
     gameWelcome()
@@ -387,14 +411,9 @@ def main():
 
         printScore(board)
 
+        if (len(validMoves) == 0 and len(getAllValidMoves(board, otherColor)) == 0):
+            gameOver(board, userColor)
         if (getTotalScore(board) == 64):
-            print("Game over!")
-            (blackScore, whiteScore) = getScores(board)
-            if (blackScore > whiteScore):
-                print("Black wins with a score of " + str(blackScore) + "!")
-            else:
-                print("White wins with a score of " + str(whiteScore) + "!")
-            break
-
+            gameOver(board, userColor)
 
 main()
