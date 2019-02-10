@@ -8,15 +8,6 @@ import time
 import copy
 import sys
 
-# https://stackoverflow.com/questions/2482602/a-general-tree-implementation
-class Node(object):
-    def __init__(self, data):
-        self.data = data
-        self.children = []
-
-    def add_child(self, obj):
-        self.children.append(obj)
-
 colLetterToNum = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7 }
 colNumToLetter = {0: "a", 1: "b", 2: "c", 3: "d", 4: "e", 5: "f", 6: "g", 7: "h"}
 colorToLetter = {"white": "O", "black": "X"}
