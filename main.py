@@ -17,7 +17,7 @@ def gameWelcome():
     print("Welcome to Reversi!")
     print("To learn how to play, please visit https://www.mathsisfun.com/games/reversi.html.")
     print("When it's your move, enter a row letter and column number adjacently, ex. \'c5\'.")
-    print("You can also enter \'quit\' to quit, or \'help\' if you need a move suggestion.")
+    print("You can also enter \'quit\' to quit at any time.")
     print("Remember that O is white, X is black. You will be able to choose your color in a second.")
     print("Enjoy, and good luck!")
 
@@ -327,22 +327,18 @@ def main():
 
         # User's turn/move
         if (userColor == moveColor):
-            print("Valid moves for you (" + moveColor + "): " + str(validMovesWithLetters))
-
             if len(validMoves) == 0:
                 print ("There are no valid moves for you (" + moveColor + "). Passing turn.")
                 userNeedsToMove = False
                 moveColor = "white" if (userColor == "black") else "black"
                 continue
+            else:
+                print("Here's a list of valid moves for you (" + moveColor + "): " + str(validMovesWithLetters))
 
             while userColor == moveColor:
                 userMove = raw_input("Your move! Remember, your color is " + str(userColor) + " (" + str(colorToLetter[userColor]) + ") ")
                 if (userMove == "quit"):
                     sys.exit()
-                if (userMove == "help"):
-                    
-                    print("Here's a list of valid moves: " + str(validMovesWithLetters))
-                    print("Go ahead, you got this.")
                     continue
                 if len(re.findall(r'[a-h][1-8]$', userMove)) != 1:
                     print("Looks like you didn't format your move correctly. Example: c6")
