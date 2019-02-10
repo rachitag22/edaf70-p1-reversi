@@ -220,6 +220,8 @@ def flipTilesAndReturnNewBoard(board, moveColor, row, col):
 
 # Returns whether or not a given move for a player is valid
 def isValidMove(board, moveColor, row, col):
+    if (board[row][col] != " "):
+        return False
     if (len(getFlippedTilesList(board, moveColor, row, col)) == 0):
         return False
     return True
