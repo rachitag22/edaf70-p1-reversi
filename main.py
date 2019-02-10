@@ -113,6 +113,20 @@ def selectColor():
 
     return userColor, cpuColor
 
+def selectDepth():
+    depthInput = raw_input("How many moves/tree levels (depth) would you like the computer to search during the minimax algorithm? Please enter an integer between 1 and 10.")
+    try:
+        depthNum = int(depthInput)
+    except ValueError:
+        depthNum = 5
+
+    if depthNum < 1:
+        depthNum = 1
+    elif depthNum > 10:
+        depthNum = 10
+
+    return depthNum
+
 # Converts a board letter/piece (O or X) to either -1 or 1
 def convertColor(val):
     if (val == "X" or val == "black"):
@@ -274,10 +288,9 @@ def minimax(board, moveColor, depth, maximizing, alpha, beta, validMoves):
 
     return (bestScore, bestRow, bestCol)
 
-def makeCpuMove(board, moveColor, validMoves):
+def makeCpuMove(board, moveColor, depth, validMoves):
     printBoard(board)
-    searchDepth = 5
-    minimax_result = minimax(board, moveColor, searchDepth, True, 0, 100, validMoves)
+    minimax_result = minimax(board, moveColor, depth, True, 0, 100, validMoves)
     # print("Minimax Result: " + str(minimax_result))
     return (minimax_result[1], minimax_result[2])
 
@@ -311,6 +324,7 @@ def main():
 
     timeDelay = selectTime()
     userColor, cpuColor = selectColor()
+    cpuDepth = selectDepth()
     moveColor = "black"
 
     printBoard(board)
@@ -380,7 +394,7 @@ def main():
                 continue
 
             tempBoard = copy.deepcopy(board)
-            cpuMove = makeCpuMove(tempBoard, cpuColor, validMoves)
+            cpuMove = makeCpuMove(tempBoard, cpuColor, cpuDepth, validMoves)
 
             (rowIndex, colIndex) = cpuMove
 
