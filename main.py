@@ -235,7 +235,7 @@ def getAllValidMoves(board, moveColor):
     return allValidMoves
 
 
-def minimax(board, moveColor, depth, maximizing, validMoves):
+def minimax(board, moveColor, depth, maximizing, alpha, beta, validMoves):
     if moveColor == "black":
         nextMoveColor = "white"
     else:
@@ -251,28 +251,40 @@ def minimax(board, moveColor, depth, maximizing, validMoves):
         for (moveRow, moveCol) in validMoves:
             newBoard = flipTilesAndReturnNewBoard(board, moveColor, moveRow, moveCol)
             newValidMoves = getAllValidMoves(newBoard, nextMoveColor)
-            newScore = minimax(newBoard, moveColor, depth - 1, False, newValidMoves)[0]
+            newScore = minimax(newBoard, moveColor, depth - 1, False, alpha, beta, newValidMoves)[0]
+            
             if (newScore > maxScore):
                 bestScore = newScore
                 bestRow = moveRow
-                bestCol = moveCol  
+                bestCol = moveCol
+
+            alpha = max(alpha, bestScore)
+            
+            if beta <= alpha:
+                break
     else:
         minScore = 100
         for (moveRow, moveCol) in validMoves:
             newBoard = flipTilesAndReturnNewBoard(board, moveColor, moveRow, moveCol)
             newValidMoves = getAllValidMoves(newBoard, nextMoveColor)
-            newScore = minimax(newBoard, moveColor, depth - 1, True, newValidMoves)[0]
+            newScore = minimax(newBoard, moveColor, depth - 1, True, alpha, beta, newValidMoves)[0]
+
             if (newScore < minScore):
                 bestScore = newScore
                 bestRow = moveRow
-                bestCol = moveCol      
+                bestCol = moveCol    
+            
+            beta = min(beta, bestScore)
+
+            if beta <= alpha:
+                break
 
     return (bestScore, bestRow, bestCol)
 
 def makeCpuMove(board, moveColor, validMoves):
     printBoard(board)
     searchDepth = 5
-    minimax_result = minimax(board, moveColor, searchDepth, True, validMoves)
+    minimax_result = minimax(board, moveColor, searchDepth, True, 0, 100, validMoves)
     print("Minimax Result: " + str(minimax_result))
     return (minimax_result[1], minimax_result[2])
 
@@ -345,7 +357,7 @@ def main():
             print("Hold on, I\'m thinking...")
 
             time.sleep(timeDelay)
-            
+
             print("Valid moves for computer (" + moveColor + "): " + str(validMovesWithLetters))
 
             if len(validMoves) == 0:
