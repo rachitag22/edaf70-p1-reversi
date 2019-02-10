@@ -278,7 +278,7 @@ def makeCpuMove(board, moveColor, validMoves):
     printBoard(board)
     searchDepth = 5
     minimax_result = minimax(board, moveColor, searchDepth, True, 0, 100, validMoves)
-    print("Minimax Result: " + str(minimax_result))
+    # print("Minimax Result: " + str(minimax_result))
     return (minimax_result[1], minimax_result[2])
 
 def gameOver(board, userColor):
