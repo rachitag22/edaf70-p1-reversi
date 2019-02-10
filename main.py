@@ -4,6 +4,7 @@
 import numpy as np
 import string
 import re
+import time
 
 # https://stackoverflow.com/questions/2482602/a-general-tree-implementation
 class Node(object):
@@ -70,6 +71,32 @@ def getNumTiles(board):
         numWhite += row.count("O")
     
     return (numBlack, numWhite)
+
+def getNumTilesTotal(board):
+    (numBlack, numWhite) = getNumTiles(board)
+    return numBlack + numWhite
+
+def printScore(board):
+    (numBlack, numWhite) = getNumTiles(board)
+    print("(X) Black   " + str(numBlack) + " - " + str(numWhite) + "   White (O)")
+    winningColor = "Black" if numBlack > numWhite else "White"
+    # print(winningColor + userWinning + " is winning!")
+
+# Handles time wait selection
+def selectTime():
+    userTimeInput = raw_input("How long (in seconds) would you like the computer to wait before making a move? Please enter an integer or float between 0 and 10. ")
+
+    try:
+        timeInputNum = float(userTimeInput)
+    except ValueError:
+        timeInputNum = 1
+
+    if timeInputNum < 0:
+        timeInput = 0
+    elif timeInputNum > 10:
+        timeInputNum = 10
+
+    return timeInputNum
 
 # Handles user color selection
 def selectColor():
@@ -193,12 +220,16 @@ def main():
     board = setupBoard()
     gameWelcome()
 
+    timeDelay = selectTime()
     userColor, cpuColor = selectColor()
     moveColor = "black"
 
+    printBoard(board)
+
     while True:
-        printBoard(board)
         
+        # printBoard(board)
+
         validMoves = getAllValidMoves(board, moveColor)
 
         if len(validMoves) == 0:
@@ -212,10 +243,9 @@ def main():
         for move in validMoves:
             validMovesWithLetters.append(convertTileTupleToString(move))
 
-        print("Valid moves for " + moveColor + ": " + str(validMovesWithLetters))
-
         # User's turn/move
         if (userColor == moveColor):
+            print("Valid moves for you (" + moveColor + "): " + str(validMovesWithLetters))
             while userColor == moveColor:
                 userMove = raw_input("Your move! Remember, your color is " + str(userColor) + " (" + str(colorToLetter[userColor]) + ") ")
                 if (userMove == "quit"):
@@ -239,24 +269,33 @@ def main():
                     print()
                     continue
 
-                print("Nice move! " + moveColor + " placing tile on " + userMove)
                 board[rowIndex][colIndex] = "X" if userColor == "black" else "O"
                 
                 board = flipTilesAndReturnNewBoard(board, moveColor, rowIndex, colIndex)
+
+                printBoard(board)
+                print("Nice move! " + moveColor + " placing tile on " + userMove)
+                printScore(board)
 
                 moveColor = cpuColor
                 
         # Computer's turn/move
         else:
+            time.sleep(timeDelay)
+
+            print("Valid moves for computer (" + moveColor + "): " + str(validMovesWithLetters))
+
             # Implement algorithm here
             cpuMove = validMoves[0]
             (rowIndex, colIndex) = cpuMove
 
-            print("CPU move! " + moveColor + " placing tile on " + convertTileTupleToString(cpuMove))
             board[rowIndex][colIndex] = "X" if cpuColor == "black" else "O"
             board = flipTilesAndReturnNewBoard(board, moveColor, rowIndex, colIndex)
 
-            moveColor = userColor
+            printBoard(board)
+            print("CPU move! " + moveColor + " placed tile on " + convertTileTupleToString(cpuMove))
+            printScore(board)
 
+            moveColor = userColor
 
 main()
