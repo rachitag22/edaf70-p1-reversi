@@ -5,6 +5,8 @@ import numpy as np
 import string
 import re
 import time
+import copy
+import sys
 
 # https://stackoverflow.com/questions/2482602/a-general-tree-implementation
 class Node(object):
@@ -72,6 +74,13 @@ def getScores(board):
     
     return (numBlack, numWhite)
 
+def getPlayerScore(board, playerColor):
+    (blackScore, whiteScore) = getScores(board)
+    if playerColor == "black":
+        return blackScore
+    else:
+        return whiteScore
+
 def getTotalScore(board):
     (numBlack, numWhite) = getScores(board)
     return numBlack + numWhite
@@ -133,6 +142,7 @@ def getFlippedTilesList(board, moveColor, row, col):
     otherConst = moveConst * -1
 
     # print("Testing for " + moveColor + " @ " + str(row) + ", " + str(col))
+
     for deltaRow in range(-1,2):
         for deltaCol in range(-1,2):
             # print("Testing next tile, dX and dY: " + str(deltaRow) + ", " + str(deltaCol))
@@ -180,14 +190,23 @@ def getFlippedTilesList(board, moveColor, row, col):
                     continueSearch = False
 
     return tilesToFlip
-    
+
+def getFlippedTilesListString(board, moveColor, row, col):
+    newList = []
+    flippedTiles = getFlippedTilesList(board, moveColor, row, col)
+    for tile in flippedTiles:
+        newList.append(convertTileTupleToString(tile))
+
+    newString = ", ".join(newList)
+    return newString
+
 def getNumFlippedTiles(board, moveColor, row, col):
     return len(getFlippedTilesList(board, moveColor, row, col))
 
 # Flips tiles and returns resultant board upon making a move (which should already be validated)
 def flipTilesAndReturnNewBoard(board, moveColor, row, col):
     tilesToFlip = getFlippedTilesList(board, moveColor, row, col)
-    
+
     for (flipRow, flipCol) in tilesToFlip:
         board[flipRow][flipCol] = "X" if board[flipRow][flipCol] == "O" else "O"
     
@@ -196,7 +215,6 @@ def flipTilesAndReturnNewBoard(board, moveColor, row, col):
     for tile in tilesToFlip:
         tilesFlippedWithLetters.append(convertTileTupleToString(tile))
 
-    print("Tiles Flipped: " + str(tilesFlippedWithLetters))
     return board
 
 
@@ -216,19 +234,47 @@ def getAllValidMoves(board, moveColor):
                 allValidMoves.append((row, col))
     return allValidMoves
 
-def generateTree(board, color, validMoves):
 
-
-
-
-def minimax(board, color, depth, validMoves):
-    if cpuColor == "black":
-        cpuSymbol = "X"
+def minimax(board, moveColor, depth, maximizing, validMoves):
+    if moveColor == "black":
+        nextMoveColor = "white"
     else:
-        cpuSymbol = "O"
+        nextMoveColor = "black"
 
-    gameTree = generateTree(board, color, validMoves)
+    (bestRow, bestCol) = (-1, -1)
 
+    if depth == 0 or len(validMoves) == 0:
+        return (getPlayerScore(board, moveColor), bestRow, bestCol)
+
+    if maximizing:
+        maxScore = 0
+        for (moveRow, moveCol) in validMoves:
+            newBoard = flipTilesAndReturnNewBoard(board, moveColor, moveRow, moveCol)
+            newValidMoves = getAllValidMoves(newBoard, nextMoveColor)
+            newScore = minimax(newBoard, moveColor, depth - 1, False, newValidMoves)[0]
+            if (newScore > maxScore):
+                bestScore = newScore
+                bestRow = moveRow
+                bestCol = moveCol  
+    else:
+        minScore = 100
+        for (moveRow, moveCol) in validMoves:
+            newBoard = flipTilesAndReturnNewBoard(board, moveColor, moveRow, moveCol)
+            newValidMoves = getAllValidMoves(newBoard, nextMoveColor)
+            newScore = minimax(newBoard, moveColor, depth - 1, True, newValidMoves)[0]
+            if (newScore < minScore):
+                bestScore = newScore
+                bestRow = moveRow
+                bestCol = moveCol      
+
+    return (bestScore, bestRow, bestCol)
+
+def makeCpuMove(board, moveColor, validMoves):
+    printBoard(board)
+    searchDepth = 5
+    minimax_result = minimax(board, moveColor, searchDepth, True, validMoves)
+    print("Minimax Result: " + str(minimax_result))
+    return (minimax_result[1], minimax_result[2])
 
 def main():
     board = setupBoard()
@@ -246,13 +292,6 @@ def main():
 
         validMoves = getAllValidMoves(board, moveColor)
 
-        if len(validMoves) == 0:
-            print ("There are no valid moves for " + moveColor + ". Passing turn.")
-            userNeedsToMove = False
-            moveColor = "white" if (userColor == "black") else "black"
-        else:
-            userNeedsToMove = True
-
         validMovesWithLetters = []
         for move in validMoves:
             validMovesWithLetters.append(convertTileTupleToString(move))
@@ -260,6 +299,13 @@ def main():
         # User's turn/move
         if (userColor == moveColor):
             print("Valid moves for you (" + moveColor + "): " + str(validMovesWithLetters))
+
+            if len(validMoves) == 0:
+                print ("There are no valid moves for you (" + moveColor + "). Passing turn.")
+                userNeedsToMove = False
+                moveColor = "white" if (userColor == "black") else "black"
+                continue
+
             while userColor == moveColor:
                 userMove = raw_input("Your move! Remember, your color is " + str(userColor) + " (" + str(colorToLetter[userColor]) + ") ")
                 if (userMove == "quit"):
@@ -269,7 +315,7 @@ def main():
                     print("Here's a list of valid moves: " + str(validMovesWithLetters))
                     print("Go ahead, you got this.")
                     continue
-                if len(re.findall(r'[a-h][1-8]', userMove)) != 1:
+                if len(re.findall(r'[a-h][1-8]$', userMove)) != 1:
                     print("Looks like you didn't format your move correctly. Example: c6")
                     continue
                 colLetter = re.search(r'([a-h])([1-8])', userMove).group(1)
@@ -283,33 +329,45 @@ def main():
                     print()
                     continue
 
+                flippedTiles = getFlippedTilesListString(board, moveColor, rowIndex, colIndex)
+
                 board[rowIndex][colIndex] = "X" if userColor == "black" else "O"
-                
                 board = flipTilesAndReturnNewBoard(board, moveColor, rowIndex, colIndex)
 
                 printBoard(board)
                 print("Nice move! " + moveColor + " placing tile on " + userMove)
+                print("Tiles flipped: " + flippedTiles)
 
                 moveColor = cpuColor
                 
         # Computer's turn/move
         else:
-            time.sleep(timeDelay)
-            searchDepth = 5
+            print("Hold on, I\'m thinking...")
 
+            time.sleep(timeDelay)
+            
             print("Valid moves for computer (" + moveColor + "): " + str(validMovesWithLetters))
 
-            # Implement algorithm here
-            cpuMove = minimax(board, cpuColor, searchDepth, validMoves)
+            if len(validMoves) == 0:
+                print ("There are no valid moves for computer (" + moveColor + "). Passing turn.")
+                userNeedsToMove = True
+                moveColor = "white" if (cpuColor == "black") else "black"
+                continue
 
-            cpuMove = validMoves[0]
+            tempBoard = copy.deepcopy(board)
+            cpuMove = makeCpuMove(tempBoard, cpuColor, validMoves)
+
             (rowIndex, colIndex) = cpuMove
 
+            flippedTiles = getFlippedTilesListString(board, moveColor, rowIndex, colIndex)
+
             board[rowIndex][colIndex] = "X" if cpuColor == "black" else "O"
+
             board = flipTilesAndReturnNewBoard(board, moveColor, rowIndex, colIndex)
 
             printBoard(board)
             print("CPU move! " + moveColor + " placed tile on " + convertTileTupleToString(cpuMove))
+            print("Tiles flipped: " + flippedTiles)
 
             moveColor = userColor
 
