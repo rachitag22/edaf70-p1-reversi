@@ -62,7 +62,7 @@ def printBoard(board):
         print("  " + "".join(["-" for i in range(33)]))
     # print(np.matrix(board))
 
-def getNumTiles(board):
+def getScores(board):
     numBlack = 0
     numWhite = 0
     
@@ -72,12 +72,12 @@ def getNumTiles(board):
     
     return (numBlack, numWhite)
 
-def getNumTilesTotal(board):
-    (numBlack, numWhite) = getNumTiles(board)
+def getTotalScore(board):
+    (numBlack, numWhite) = getScores(board)
     return numBlack + numWhite
 
 def printScore(board):
-    (numBlack, numWhite) = getNumTiles(board)
+    (numBlack, numWhite) = getScores(board)
     print("(X) Black   " + str(numBlack) + " - " + str(numWhite) + "   White (O)")
     winningColor = "Black" if numBlack > numWhite else "White"
     # print(winningColor + userWinning + " is winning!")
@@ -216,6 +216,20 @@ def getAllValidMoves(board, moveColor):
                 allValidMoves.append((row, col))
     return allValidMoves
 
+def generateTree(board, color, validMoves):
+
+
+
+
+def minimax(board, color, depth, validMoves):
+    if cpuColor == "black":
+        cpuSymbol = "X"
+    else:
+        cpuSymbol = "O"
+
+    gameTree = generateTree(board, color, validMoves)
+
+
 def main():
     board = setupBoard()
     gameWelcome()
@@ -275,17 +289,19 @@ def main():
 
                 printBoard(board)
                 print("Nice move! " + moveColor + " placing tile on " + userMove)
-                printScore(board)
 
                 moveColor = cpuColor
                 
         # Computer's turn/move
         else:
             time.sleep(timeDelay)
+            searchDepth = 5
 
             print("Valid moves for computer (" + moveColor + "): " + str(validMovesWithLetters))
 
             # Implement algorithm here
+            cpuMove = minimax(board, cpuColor, searchDepth, validMoves)
+
             cpuMove = validMoves[0]
             (rowIndex, colIndex) = cpuMove
 
@@ -294,8 +310,19 @@ def main():
 
             printBoard(board)
             print("CPU move! " + moveColor + " placed tile on " + convertTileTupleToString(cpuMove))
-            printScore(board)
 
             moveColor = userColor
+
+        printScore(board)
+
+        if (getTotalScore(board) == 64):
+            print("Game over!")
+            (blackScore, whiteScore) = getScores(board)
+            if (blackScore > whiteScore):
+                print("Black wins with a score of " + str(blackScore) + "!")
+            else:
+                print("White wins with a score of " + str(whiteScore) + "!")
+            break
+
 
 main()
